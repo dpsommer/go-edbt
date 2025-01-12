@@ -10,4 +10,6 @@ const (
 
 type Node interface {
 	Tick() Status
+	Children() []Node
+	AddChild(child Node) error
 }
