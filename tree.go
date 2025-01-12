@@ -13,5 +13,8 @@ func NewBehaviourTree() *BehaviourTree {
 }
 
 func (t *BehaviourTree) Start() {
-	// TODO: tick the root node...
+	for {
+		// XXX: just ignore the status for now
+		t.root.Tick()
+	}
 }
