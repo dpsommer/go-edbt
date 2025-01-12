@@ -2,19 +2,19 @@ package goedbt
 
 type BehaviourTree struct {
 	blackboard map[string]any
-	root       Node
+	Root       Node
 }
 
 func NewBehaviourTree() *BehaviourTree {
 	return &BehaviourTree{
 		blackboard: map[string]any{},
-		root:       &RootNode{},
+		Root:       &RootNode{},
 	}
 }
 
 func (t *BehaviourTree) Start() {
 	for {
 		// XXX: just ignore the status for now
-		t.root.Tick()
+		t.Root.Tick()
 	}
 }
