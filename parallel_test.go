@@ -7,12 +7,13 @@ import (
 )
 
 func TestParallel(t *testing.T) {
-	tree := goedbt.NewBehaviourTree()
-	parallel := &goedbt.ParallelNode{}
-	parallel.AddChild(&goedbt.FailureTask{})
-	parallel.AddChild(&goedbt.SuccessTask{})
-	tree.Root.AddChild(parallel)
-	status := tree.Root.Tick()
+	parallel := goedbt.NewParallel()
+	parallel.AddChild(&goedbt.FailureBehaviour{})
+	parallel.AddChild(&goedbt.SuccessBehaviour{})
+
+	tree := goedbt.NewBehaviourTree(parallel)
+
+	status := goedbt.Tick(tree.Root)
 
 	if status != goedbt.Success {
 		t.Errorf("ParallelNode got %d, want %d", status, goedbt.Success)
