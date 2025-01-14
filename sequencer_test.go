@@ -7,17 +7,18 @@ import (
 )
 
 func TestSequencer(t *testing.T) {
-	tree := goedbt.NewBehaviourTree()
-	sequencer := &goedbt.SequencerNode{}
-	tree.Root.AddChild(sequencer)
-	sequencer.AddChild(&goedbt.SuccessTask{})
-	status := tree.Root.Tick()
+	sequencer := goedbt.NewSequencer()
+	sequencer.AddChild(&goedbt.SuccessBehaviour{})
+	tree := goedbt.NewBehaviourTree(sequencer)
+
+	status := goedbt.Tick(tree.Root)
 	if status != goedbt.Success {
-		t.Errorf("SequencerNode got %d, want %d", status, goedbt.Success)
+		t.Errorf("Sequencer got %d, want %d", status, goedbt.Success)
 	}
-	sequencer.AddChild(&goedbt.FailureTask{})
-	status = tree.Root.Tick()
+
+	sequencer.AddChild(&goedbt.FailureBehaviour{})
+	status = goedbt.Tick(tree.Root)
 	if status != goedbt.Failure {
-		t.Errorf("SequencerNode got %d, want %d", status, goedbt.Failure)
+		t.Errorf("Sequencer got %d, want %d", status, goedbt.Failure)
 	}
 }

@@ -6,15 +6,37 @@ import (
 	goedbt "github.com/dpsommer/go-edbt"
 )
 
+func setupSimpleSelectorTree(tasks ...goedbt.Behaviour) *goedbt.BehaviourTree {
+	selector := goedbt.NewSelector()
+	for _, t := range tasks {
+		selector.AddChild(t)
+	}
+
+	tree := goedbt.NewBehaviourTree(selector)
+
+	return tree
+}
+
 func TestSelector(t *testing.T) {
-	tree := goedbt.NewBehaviourTree()
-	selector := &goedbt.SelectorNode{}
-	selector.AddChild(&goedbt.FailureTask{})
-	selector.AddChild(&goedbt.SuccessTask{})
-	tree.Root.AddChild(selector)
-	status := tree.Root.Tick()
+	tree := setupSimpleSelectorTree(
+		&goedbt.FailureBehaviour{},
+		&goedbt.SuccessBehaviour{},
+	)
+	status := goedbt.Tick(tree.Root)
 
 	if status != goedbt.Success {
-		t.Errorf("SelectorNode got %d, want %d", status, goedbt.Success)
+		t.Errorf("Selector got %d, want %d", status, goedbt.Success)
+	}
+}
+
+func TestSelectorRunning(t *testing.T) {
+	tree := setupSimpleSelectorTree(
+		&goedbt.FailureBehaviour{},
+		&goedbt.RunningBehaviour{},
+	)
+	status := goedbt.Tick(tree.Root)
+
+	if status != goedbt.Running {
+		t.Errorf("Selector got %d, want %d", status, goedbt.Running)
 	}
 }

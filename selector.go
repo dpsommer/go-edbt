@@ -1,27 +1,32 @@
 package goedbt
 
-type SelectorNode struct {
-	children []Node
+// Selector defines a Behaviour BehaviourNode that checks each of its children,
+// returning the first non-Failure status or Failure if all children fail
+type Selector struct {
+	*node
+	*composite
 }
 
-func (n *SelectorNode) Tick() Status {
-	// Selector nodes implement OR behaviour - checking each child in sequence
-	// and returning on the first Success or Failure if all children fail
-	for _, child := range n.children {
-		status := child.Tick()
-		if status == Success {
-			return Success
+func NewSelector() *Selector {
+	return &Selector{
+		node: &node{state: Invalid},
+		composite: &composite{
+			children: make(map[Behaviour]struct{}),
+		},
+	}
+}
+
+func (n *Selector) Initialize() {}
+func (n *Selector) Terminate()  {}
+
+func (n *Selector) Update() Status {
+	for c := range n.children {
+		if status := tick(c); status != Failure {
+			n.state = status
+			return n.state
 		}
 	}
 
-	return Failure
-}
-
-func (n *SelectorNode) Children() []Node {
-	return n.children
-}
-
-func (n *SelectorNode) AddChild(child Node) error {
-	n.children = append(n.children, child)
-	return nil
+	n.state = Failure
+	return n.state
 }
