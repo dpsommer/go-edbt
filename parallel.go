@@ -8,14 +8,13 @@ import (
 // concurrently. Returns Running until at least one child succeeds.
 // If all children fail, returns Failure.
 type Parallel struct {
-	*node
 	*composite
 }
 
 func NewParallel() *Parallel {
 	return &Parallel{
-		node: &node{state: Invalid},
 		composite: &composite{
+			node:     &node{state: Invalid},
 			children: make(map[Behaviour]struct{}),
 		},
 	}

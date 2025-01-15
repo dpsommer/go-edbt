@@ -5,7 +5,6 @@ import "iter"
 // Sequencer defines a Behaviour BehaviourNode that checks each of its children,
 // returning the first non-Success status or Success if all children succeed
 type Sequencer struct {
-	*node
 	*composite
 
 	seq  iter.Seq[Behaviour]
@@ -14,8 +13,8 @@ type Sequencer struct {
 
 func NewSequencer() *Sequencer {
 	return &Sequencer{
-		node: &node{state: Invalid},
 		composite: &composite{
+			node:     &node{state: Invalid},
 			children: make(map[Behaviour]struct{}),
 		},
 	}

@@ -16,6 +16,8 @@ type Composite interface {
 }
 
 type composite struct {
+	*node
+
 	// Golang has no Set structure, so use a map to mimic one
 	children map[Behaviour]struct{}
 }
@@ -53,9 +55,12 @@ func (n *composite) AddChild(child Behaviour) {
 }
 
 func (n *composite) RemoveChild(child Behaviour) {
+	// ensure that the node is re-initialized on next tick
+	n.state = Aborted
 	delete(n.children, child)
 }
 
 func (n *composite) ClearChildren() {
+	n.state = Aborted
 	n.children = make(map[Behaviour]struct{})
 }

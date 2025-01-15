@@ -7,7 +7,6 @@ import (
 // Selector defines a Behaviour BehaviourNode that checks each of its children,
 // returning the first non-Failure status or Failure if all children fail
 type Selector struct {
-	*node
 	*composite
 
 	seq  iter.Seq[Behaviour]
@@ -16,8 +15,8 @@ type Selector struct {
 
 func NewSelector() *Selector {
 	return &Selector{
-		node: &node{state: Invalid},
 		composite: &composite{
+			node:     &node{state: Invalid},
 			children: make(map[Behaviour]struct{}),
 		},
 	}

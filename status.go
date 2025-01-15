@@ -7,4 +7,5 @@ const (
 	Success
 	Failure
 	Running
+	Aborted
 )
