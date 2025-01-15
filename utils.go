@@ -1,6 +1,8 @@
 package goedbt
 
-func Keys[K comparable, T any](m map[K]T) []K {
+type Set[K comparable] map[K]struct{}
+
+func keys[K comparable, T any](m map[K]T) []K {
 	keys := make([]K, len(m))
 
 	i := 0
@@ -10,4 +12,8 @@ func Keys[K comparable, T any](m map[K]T) []K {
 	}
 
 	return keys
+}
+
+func pop[K any](s []K) (K, []K) {
+	return s[len(s)-1], s[:len(s)-1]
 }
