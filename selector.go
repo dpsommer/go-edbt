@@ -9,15 +9,15 @@ import (
 type Selector struct {
 	*composite
 
-	seq  iter.Seq[Behaviour]
-	next func()
+	seq iter.Seq[Behaviour]
+	next
 }
 
 func NewSelector() *Selector {
 	return &Selector{
 		composite: &composite{
 			node:     &node{state: Invalid},
-			children: make(map[Behaviour]struct{}),
+			children: make(Set[Behaviour]),
 		},
 	}
 }
@@ -40,4 +40,5 @@ func (n *Selector) Update() Status {
 	return n.state
 }
 
-func (n *Selector) Terminate() {}
+func (n *Selector) Teardown() {}
+func (n *Selector) Abort()    {}

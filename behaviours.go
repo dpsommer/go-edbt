@@ -9,7 +9,8 @@ func (n *SuccessBehaviour) Initialize() {}
 func (n *SuccessBehaviour) Update() Status {
 	return Success
 }
-func (n *SuccessBehaviour) Terminate() {}
+func (n *SuccessBehaviour) Teardown() {}
+func (n *SuccessBehaviour) Abort()    {}
 
 // FailureBehaviour
 type FailureBehaviour struct {
@@ -20,7 +21,8 @@ func (n *FailureBehaviour) Initialize() {}
 func (n *FailureBehaviour) Update() Status {
 	return Failure
 }
-func (n *FailureBehaviour) Terminate() {}
+func (n *FailureBehaviour) Teardown() {}
+func (n *FailureBehaviour) Abort()    {}
 
 // RunningBehaviour
 type RunningBehaviour struct {
@@ -31,7 +33,8 @@ func (n *RunningBehaviour) Initialize() {}
 func (n *RunningBehaviour) Update() Status {
 	return Running
 }
-func (n *RunningBehaviour) Terminate() {}
+func (n *RunningBehaviour) Teardown() {}
+func (n *RunningBehaviour) Abort()    {}
 
 // XThenY
 type XThenY struct {
@@ -49,4 +52,5 @@ func (n *XThenY) Update() Status {
 	n.accessed = true
 	return n.X
 }
-func (n *XThenY) Terminate() {}
+func (n *XThenY) Teardown() {}
+func (n *XThenY) Abort()    {}

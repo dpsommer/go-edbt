@@ -7,15 +7,15 @@ import "iter"
 type Sequencer struct {
 	*composite
 
-	seq  iter.Seq[Behaviour]
-	next func()
+	seq iter.Seq[Behaviour]
+	next
 }
 
 func NewSequencer() *Sequencer {
 	return &Sequencer{
 		composite: &composite{
 			node:     &node{state: Invalid},
-			children: make(map[Behaviour]struct{}),
+			children: make(Set[Behaviour]),
 		},
 	}
 }
@@ -37,4 +37,5 @@ func (n *Sequencer) Update() Status {
 	return n.state
 }
 
-func (n *Sequencer) Terminate() {}
+func (n *Sequencer) Teardown() {}
+func (n *Sequencer) Abort()    {}

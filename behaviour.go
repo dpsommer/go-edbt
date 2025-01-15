@@ -4,7 +4,8 @@ type Behaviour interface {
 	State() Status
 	Initialize()
 	Update() Status
-	Terminate()
+	Teardown()
+	Abort()
 }
 
 type node struct {
@@ -20,7 +21,7 @@ func tick(b Behaviour) Status {
 
 	state := b.Update()
 	if state != Running {
-		b.Terminate()
+		b.Teardown()
 	}
 
 	return state
