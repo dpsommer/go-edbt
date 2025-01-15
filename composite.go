@@ -19,22 +19,16 @@ type composite struct {
 	*node
 
 	// Golang has no Set structure, so use a map to mimic one
-	children map[Behaviour]struct{}
+	children Set[Behaviour]
 }
 
 func (n *composite) Children() (iter.Seq[Behaviour], next) {
 	// copy the children map keys to a list so that modifications to it
 	// while we hold an active iterator don't affect iteration. use a list
 	// so that we can replay the same keys if needed
-	cc := make([]Behaviour, len(n.children))
+	cc := keys(n.children)
 
 	var i int
-	for k := range n.children {
-		cc[i] = k
-		i += 1
-	}
-
-	i = 0
 
 	// return an iterator and a closure that increments the iterator so that we
 	// can resume iteration from the same key if a child is running
@@ -62,5 +56,5 @@ func (n *composite) RemoveChild(child Behaviour) {
 
 func (n *composite) ClearChildren() {
 	n.state = Aborted
-	n.children = make(map[Behaviour]struct{})
+	n.children = make(Set[Behaviour])
 }

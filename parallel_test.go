@@ -7,15 +7,104 @@ import (
 )
 
 func TestParallel(t *testing.T) {
-	parallel := goedbt.NewParallel()
-	parallel.AddChild(&goedbt.FailureBehaviour{})
-	parallel.AddChild(&goedbt.SuccessBehaviour{})
+	tt := map[string]struct {
+		successPolicy goedbt.Policy
+		behaviours    []goedbt.Behaviour
+		expected      []goedbt.Status
+	}{
+		"RequireOne success": {
+			successPolicy: goedbt.RequireOne,
+			behaviours: []goedbt.Behaviour{
+				&goedbt.FailureBehaviour{},
+				&goedbt.SuccessBehaviour{},
+			},
+			expected: []goedbt.Status{goedbt.Success},
+		},
+		"RequireOne failure": {
+			successPolicy: goedbt.RequireOne,
+			behaviours: []goedbt.Behaviour{
+				&goedbt.FailureBehaviour{},
+				&goedbt.FailureBehaviour{},
+			},
+			expected: []goedbt.Status{goedbt.Failure},
+		},
+		"RequireAll success": {
+			successPolicy: goedbt.RequireAll,
+			behaviours: []goedbt.Behaviour{
+				&goedbt.SuccessBehaviour{},
+				&goedbt.SuccessBehaviour{},
+			},
+			expected: []goedbt.Status{goedbt.Success},
+		},
+		"RequireAll failure": {
+			successPolicy: goedbt.RequireAll,
+			behaviours: []goedbt.Behaviour{
+				&goedbt.SuccessBehaviour{},
+				&goedbt.SuccessBehaviour{},
+				&goedbt.FailureBehaviour{},
+			},
+			expected: []goedbt.Status{goedbt.Failure},
+		},
+		"returns running": {
+			successPolicy: goedbt.RequireOne,
+			behaviours: []goedbt.Behaviour{
+				&goedbt.RunningBehaviour{},
+				&goedbt.FailureBehaviour{},
+				&goedbt.FailureBehaviour{},
+			},
+			expected: []goedbt.Status{goedbt.Running},
+		},
+		"returns success despite running child": {
+			successPolicy: goedbt.RequireOne,
+			behaviours: []goedbt.Behaviour{
+				&goedbt.RunningBehaviour{},
+				&goedbt.SuccessBehaviour{},
+				&goedbt.FailureBehaviour{},
+			},
+			expected: []goedbt.Status{goedbt.Success},
+		},
+		"returns running then success": {
+			successPolicy: goedbt.RequireOne,
+			behaviours: []goedbt.Behaviour{
+				&goedbt.FailureBehaviour{},
+				&goedbt.XThenY{X: goedbt.Running, Y: goedbt.Success},
+				&goedbt.FailureBehaviour{},
+			},
+			expected: []goedbt.Status{goedbt.Running, goedbt.Success},
+		},
+		"returns failure despite running child": {
+			successPolicy: goedbt.RequireAll,
+			behaviours: []goedbt.Behaviour{
+				&goedbt.RunningBehaviour{},
+				&goedbt.SuccessBehaviour{},
+				&goedbt.FailureBehaviour{},
+			},
+			expected: []goedbt.Status{goedbt.Failure},
+		},
+		"returns running then failure": {
+			successPolicy: goedbt.RequireAll,
+			behaviours: []goedbt.Behaviour{
+				&goedbt.SuccessBehaviour{},
+				&goedbt.XThenY{X: goedbt.Running, Y: goedbt.Failure},
+				&goedbt.SuccessBehaviour{},
+			},
+			expected: []goedbt.Status{goedbt.Running, goedbt.Failure},
+		},
+	}
 
-	tree := goedbt.NewBehaviourTree(parallel)
+	for name, tc := range tt {
+		t.Run(name, func(t *testing.T) {
+			tree := setupCompositeTree(
+				goedbt.NewParallel(tc.successPolicy),
+				tc.behaviours...,
+			)
 
-	status := goedbt.Tick(tree.Root)
-
-	if status != goedbt.Success {
-		t.Errorf("ParallelNode got %d, want %d", status, goedbt.Success)
+			for _, s := range tc.expected {
+				status := goedbt.Tick(tree.Root)
+				if status != s {
+					t.Errorf("Selector got %d, want %d", status, s)
+				}
+			}
+		})
 	}
 }
