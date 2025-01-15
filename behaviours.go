@@ -32,3 +32,21 @@ func (n *RunningBehaviour) Update() Status {
 	return Running
 }
 func (n *RunningBehaviour) Terminate() {}
+
+// XThenY
+type XThenY struct {
+	node
+
+	accessed bool
+	X, Y     Status
+}
+
+func (n *XThenY) Initialize() {}
+func (n *XThenY) Update() Status {
+	if n.accessed {
+		return n.Y
+	}
+	n.accessed = true
+	return n.X
+}
+func (n *XThenY) Terminate() {}
