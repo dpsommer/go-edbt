@@ -1,15 +1,11 @@
 package goedbt
 
-import (
-	"iter"
-)
-
 type next func()
 
 type Composite interface {
 	Behaviour
 
-	Children() (iter.Seq[Behaviour], next)
+	Children() iterator[Behaviour]
 	AddChild(child Behaviour)
 	RemoveChild(child Behaviour)
 	ClearChildren()
@@ -22,7 +18,7 @@ type composite struct {
 	children Set[Behaviour]
 }
 
-func (n *composite) Children() (iter.Seq[Behaviour], next) {
+func (n *composite) Children() iterator[Behaviour] {
 	// copy the children map keys to a list so that modifications to it
 	// while we hold an active iterator don't affect iteration. use a list
 	// so that we can replay the same keys if needed
@@ -32,16 +28,19 @@ func (n *composite) Children() (iter.Seq[Behaviour], next) {
 
 	// return an iterator and a closure that increments the iterator so that we
 	// can resume iteration from the same key if a child is running
-	return func(yield func(Behaviour) bool) {
-		for {
-			if i >= len(cc) {
-				return
+	return iterator[Behaviour]{
+		func(yield func(Behaviour) bool) {
+			for {
+				if i >= len(cc) {
+					return
+				}
+				if !yield(cc[i]) {
+					return
+				}
 			}
-			if !yield(cc[i]) {
-				return
-			}
-		}
-	}, func() { i += 1 }
+		},
+		func() { i += 1 },
+	}
 }
 
 func (n *composite) AddChild(child Behaviour) {
