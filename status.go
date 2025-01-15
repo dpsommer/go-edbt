@@ -3,8 +3,8 @@ package goedbt
 type Status int
 
 const (
-	Invalid Status = -1
-	Success Status = iota
+	Invalid Status = iota - 1
+	Success
 	Failure
 	Running
 )
