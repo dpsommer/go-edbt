@@ -1,5 +1,12 @@
 package goedbt
 
+import "iter"
+
+type iterator[T any] struct {
+	seq iter.Seq[T]
+	next
+}
+
 type Set[K comparable] map[K]struct{}
 
 func keys[K comparable, T any](m map[K]T) []K {
@@ -14,6 +21,6 @@ func keys[K comparable, T any](m map[K]T) []K {
 	return keys
 }
 
-func pop[K any](s []K) (K, []K) {
+func pop[T any](s []T) (T, []T) {
 	return s[len(s)-1], s[:len(s)-1]
 }

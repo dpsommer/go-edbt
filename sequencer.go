@@ -1,14 +1,11 @@
 package goedbt
 
-import "iter"
-
 // Sequencer defines a Behaviour BehaviourNode that checks each of its children,
 // returning the first non-Success status or Success if all children succeed
 type Sequencer struct {
 	*composite
 
-	seq iter.Seq[Behaviour]
-	next
+	iterator[Behaviour]
 }
 
 func NewSequencer() *Sequencer {
@@ -21,7 +18,7 @@ func NewSequencer() *Sequencer {
 }
 
 func (n *Sequencer) Initialize() {
-	n.seq, n.next = n.Children()
+	n.iterator = n.Children()
 }
 
 func (n *Sequencer) Update() Status {
