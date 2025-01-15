@@ -6,37 +6,44 @@ import (
 	goedbt "github.com/dpsommer/go-edbt"
 )
 
-func setupSimpleSelectorTree(tasks ...goedbt.Behaviour) *goedbt.BehaviourTree {
-	selector := goedbt.NewSelector()
-	for _, t := range tasks {
-		selector.AddChild(t)
-	}
-
-	tree := goedbt.NewBehaviourTree(selector)
-
-	return tree
-}
-
 func TestSelector(t *testing.T) {
-	tree := setupSimpleSelectorTree(
-		&goedbt.FailureBehaviour{},
-		&goedbt.SuccessBehaviour{},
-	)
-	status := goedbt.Tick(tree.Root)
-
-	if status != goedbt.Success {
-		t.Errorf("Selector got %d, want %d", status, goedbt.Success)
+	tt := map[string]struct {
+		behaviours []goedbt.Behaviour
+		expected   []goedbt.Status
+	}{
+		"returns success": {
+			behaviours: []goedbt.Behaviour{
+				&goedbt.FailureBehaviour{},
+				&goedbt.SuccessBehaviour{},
+			},
+			expected: []goedbt.Status{goedbt.Success},
+		},
+		"returns running": {
+			behaviours: []goedbt.Behaviour{
+				&goedbt.FailureBehaviour{},
+				&goedbt.RunningBehaviour{},
+			},
+			expected: []goedbt.Status{goedbt.Running},
+		},
+		"returns running then success": {
+			behaviours: []goedbt.Behaviour{
+				&goedbt.FailureBehaviour{},
+				&goedbt.XThenY{X: goedbt.Running, Y: goedbt.Success},
+			},
+			expected: []goedbt.Status{goedbt.Running, goedbt.Success},
+		},
 	}
-}
 
-func TestSelectorRunning(t *testing.T) {
-	tree := setupSimpleSelectorTree(
-		&goedbt.FailureBehaviour{},
-		&goedbt.RunningBehaviour{},
-	)
-	status := goedbt.Tick(tree.Root)
+	for name, tc := range tt {
+		t.Run(name, func(t *testing.T) {
+			tree := setupCompositeTree(goedbt.NewSelector(), tc.behaviours...)
 
-	if status != goedbt.Running {
-		t.Errorf("Selector got %d, want %d", status, goedbt.Running)
+			for _, s := range tc.expected {
+				status := goedbt.Tick(tree.Root)
+				if status != s {
+					t.Errorf("Selector got %d, want %d", status, s)
+				}
+			}
+		})
 	}
 }
