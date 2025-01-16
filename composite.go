@@ -14,7 +14,6 @@ type Composite interface {
 type composite struct {
 	*node
 
-	// Golang has no Set structure, so use a map to mimic one
 	children Set[Behaviour]
 }
 
@@ -29,7 +28,7 @@ func (n *composite) Children() iterator[Behaviour] {
 	// return an iterator and a closure that increments the iterator so that we
 	// can resume iteration from the same key if a child is running
 	return iterator[Behaviour]{
-		func(yield func(Behaviour) bool) {
+		seq: func(yield func(Behaviour) bool) {
 			for {
 				if i >= len(cc) {
 					return
@@ -39,7 +38,7 @@ func (n *composite) Children() iterator[Behaviour] {
 				}
 			}
 		},
-		func() { i += 1 },
+		next: func() { i += 1 },
 	}
 }
 
