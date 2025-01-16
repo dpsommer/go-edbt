@@ -1,37 +1,32 @@
 package goedbt
 
-type Observer func(s Status)
-
 type Behaviour interface {
 	State() Status
 	SetState(s Status)
 
-	Initialize()
-	Update() Status
-	Teardown()
-	Abort()
-
-	FireObserver(s Status)
+	initialize()
+	update() Status
+	teardown()
+	abort()
 }
 
 type behaviour struct {
 	state Status
-
-	Observer
 }
 
-func (n *behaviour) State() Status         { return n.state }
-func (n *behaviour) SetState(s Status)     { n.state = s }
-func (n *behaviour) FireObserver(s Status) { n.Observer(s) }
+func (n *behaviour) State() Status { return n.state }
+func (n *behaviour) SetState(s Status) {
+	n.state = s
+}
 
 func tick(b Behaviour) Status {
 	if b.State() != Running {
-		b.Initialize()
+		b.initialize()
 	}
 
-	state := b.Update()
+	state := b.update()
 	if state != Running {
-		b.Teardown()
+		b.teardown()
 	}
 
 	return state

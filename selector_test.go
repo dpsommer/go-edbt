@@ -36,8 +36,9 @@ func TestSelector(t *testing.T) {
 
 	for name, tc := range tt {
 		t.Run(name, func(t *testing.T) {
-			selector := goedbt.NewSelector()
-			tree := setupCompositeTree(selector, tc.behaviours...)
+			tree := goedbt.NewBehaviourTree()
+			selector := goedbt.NewSelector(tree)
+			setupCompositeTree(tree, selector, tc.behaviours...)
 
 			for _, s := range tc.expected {
 				tree.Tick()

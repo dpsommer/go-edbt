@@ -9,9 +9,9 @@ import "sync"
 // for bitwise modulus: x % n == x & (n - 1).
 const minCapacity = 4
 
-// Deque represents a single instance of the deque data structure. A Deque
+// deque represents a single instance of the deque data structure. A deque
 // instance contains items of the type specified by the type argument.
-type Deque[T any] struct {
+type deque[T any] struct {
 	buf    []T
 	head   int
 	tail   int
@@ -21,20 +21,8 @@ type Deque[T any] struct {
 	sync.Mutex
 }
 
-func NewDeque[T any](baseCap int) *Deque[T] {
-	minCap := minCapacity
-	// round baseCap up to the nearest power of 2
-	for minCap < baseCap {
-		minCap <<= 1
-	}
-
-	return &Deque[T]{
-		minCap: minCap,
-	}
-}
-
-// Cap returns the current capacity of the Deque. If q is nil, q.Cap() is zero.
-func (q *Deque[T]) Cap() int {
+// Cap returns the current capacity of the deque. If q is nil, q.Cap() is zero.
+func (q *deque[T]) Cap() int {
 	if q == nil {
 		return 0
 	}
@@ -43,7 +31,7 @@ func (q *Deque[T]) Cap() int {
 
 // Len returns the number of elements currently stored in the queue. If q is
 // nil, q.Len() returns zero.
-func (q *Deque[T]) Len() int {
+func (q *deque[T]) Len() int {
 	if q == nil {
 		return 0
 	}
@@ -53,7 +41,7 @@ func (q *Deque[T]) Len() int {
 // PushBack appends an element to the back of the queue. Implements FIFO when
 // elements are removed with PopFront, and LIFO when elements are removed with
 // PopBack.
-func (q *Deque[T]) PushBack(elem T) {
+func (q *deque[T]) PushBack(elem T) {
 	q.Lock()
 	defer q.Unlock()
 
@@ -66,7 +54,7 @@ func (q *Deque[T]) PushBack(elem T) {
 }
 
 // PushFront prepends an element to the front of the queue.
-func (q *Deque[T]) PushFront(elem T) {
+func (q *deque[T]) PushFront(elem T) {
 	q.Lock()
 	defer q.Unlock()
 
@@ -81,7 +69,7 @@ func (q *Deque[T]) PushFront(elem T) {
 // PopFront removes and returns the element from the front of the queue.
 // Implements FIFO when used with PushBack. If the queue is empty, the call
 // panics.
-func (q *Deque[T]) PopFront() T {
+func (q *deque[T]) PopFront() T {
 	q.Lock()
 	defer q.Unlock()
 
@@ -102,7 +90,7 @@ func (q *Deque[T]) PopFront() T {
 // PopBack removes and returns the element from the back of the queue.
 // Implements LIFO when used with PushBack. If the queue is empty, the call
 // panics.
-func (q *Deque[T]) PopBack() T {
+func (q *deque[T]) PopBack() T {
 	q.Lock()
 	defer q.Unlock()
 
@@ -125,7 +113,7 @@ func (q *Deque[T]) PopBack() T {
 
 // Front returns the element at the front of the queue. This is the element
 // that would be returned by PopFront. This call panics if the queue is empty.
-func (q *Deque[T]) Front() T {
+func (q *deque[T]) Front() T {
 	q.Lock()
 	defer q.Unlock()
 
@@ -137,7 +125,7 @@ func (q *Deque[T]) Front() T {
 
 // Back returns the element at the back of the queue. This is the element that
 // would be returned by PopBack. This call panics if the queue is empty.
-func (q *Deque[T]) Back() T {
+func (q *deque[T]) Back() T {
 	q.Lock()
 	defer q.Unlock()
 
@@ -152,7 +140,7 @@ func (q *Deque[T]) Back() T {
 // GC during reuse. The queue will not be resized smaller as long as items are
 // only added. Only when items are removed is the queue subject to getting
 // resized smaller.
-func (q *Deque[T]) Clear() {
+func (q *deque[T]) Clear() {
 	q.Lock()
 	defer q.Unlock()
 
@@ -168,17 +156,17 @@ func (q *Deque[T]) Clear() {
 }
 
 // prev returns the previous buffer position wrapping around buffer.
-func (q *Deque[T]) prev(i int) int {
+func (q *deque[T]) prev(i int) int {
 	return (i - 1) & (len(q.buf) - 1) // bitwise modulus
 }
 
 // next returns the next buffer position wrapping around buffer.
-func (q *Deque[T]) next(i int) int {
+func (q *deque[T]) next(i int) int {
 	return (i + 1) & (len(q.buf) - 1) // bitwise modulus
 }
 
 // growIfFull resizes up if the buffer is full.
-func (q *Deque[T]) growIfFull() {
+func (q *deque[T]) growIfFull() {
 	if q.count != len(q.buf) {
 		return
 	}
@@ -193,7 +181,7 @@ func (q *Deque[T]) growIfFull() {
 }
 
 // shrinkIfExcess resize down if the buffer 1/4 full.
-func (q *Deque[T]) shrinkIfExcess() {
+func (q *deque[T]) shrinkIfExcess() {
 	if len(q.buf) > q.minCap && (q.count<<2) == len(q.buf) {
 		q.resize(q.count << 1)
 	}
@@ -202,7 +190,7 @@ func (q *Deque[T]) shrinkIfExcess() {
 // resize resizes the deque to fit exactly twice its current contents. This is
 // used to grow the queue when it is full, and also to shrink it when it is
 // only a quarter full.
-func (q *Deque[T]) resize(newSize int) {
+func (q *deque[T]) resize(newSize int) {
 	newBuf := make([]T, newSize)
 	if q.tail > q.head {
 		copy(newBuf, q.buf[q.head:q.tail])

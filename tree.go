@@ -2,13 +2,13 @@ package goedbt
 
 type BehaviourTree struct {
 	blackboard map[string]any
-	scheduler  *Deque[Behaviour]
+	scheduler  *deque[*Event]
 }
 
 func NewBehaviourTree() *BehaviourTree {
 	return &BehaviourTree{
 		blackboard: map[string]any{},
-		scheduler:  NewDeque[Behaviour](minCapacity),
+		scheduler:  &deque[*Event]{},
 	}
 }
 
@@ -21,30 +21,32 @@ func (t *BehaviourTree) Tick() {
 }
 
 func (t *BehaviourTree) step() bool {
-	b := t.scheduler.PopFront()
-	if b == nil {
+	e := t.scheduler.PopFront()
+	if e == nil {
 		return false
 	}
 
-	state := tick(b)
-	if state != Running {
-		b.FireObserver(state)
+	state := tick(e)
+	if state != Running && e.Observer != nil {
+		e.Observer(state)
 	} else {
-		t.scheduler.PushBack(b)
+		t.scheduler.PushBack(e)
 	}
 
 	return true
 }
 
-func (t *BehaviourTree) Start(b Behaviour) {
-	t.scheduler.PushFront(b)
+func (t *BehaviourTree) Start(e *Event) {
+	t.scheduler.PushFront(e)
 }
 
-func (t *BehaviourTree) Stop(b Behaviour, s Status) {
+func (t *BehaviourTree) Stop(e *Event, s Status) {
 	if s == Running {
 		panic("can't set Running state for stopped behaviour")
 	}
 
-	b.SetState(s)
-	b.FireObserver(s)
+	e.SetState(s)
+	if e.Observer != nil {
+		e.Observer(s)
+	}
 }

@@ -3,13 +3,17 @@ package goedbt
 // Sequencer defines a composite Behaviour that checks each of its children,
 // returning the first non-Success status or Success if all children succeed
 type Sequencer struct {
+	*BehaviourTree
 	*composite
 
 	iterator[Behaviour]
 }
 
-func NewSequencer() *Sequencer {
+// XXX: don't love having to pass the BT to each node - can this even be called
+// a tree at this point?
+func NewSequencer(bt *BehaviourTree) *Sequencer {
 	return &Sequencer{
+		BehaviourTree: bt,
 		composite: &composite{
 			behaviour: &behaviour{state: Invalid},
 			children:  make(Set[Behaviour]),
@@ -17,22 +21,39 @@ func NewSequencer() *Sequencer {
 	}
 }
 
-func (n *Sequencer) Initialize() {
+func (n *Sequencer) initialize() {
 	n.iterator = n.Children()
+	n.pushCurrentChild()
 }
 
-func (n *Sequencer) Update() Status {
-	for c := range n.seq {
-		if status := tick(c); status != Success {
-			n.state = status
-			return n.state
+func (n *Sequencer) pushCurrentChild() {
+	n.Start(&Event{
+		Behaviour: n.current(),
+		Observer:  n.onChildComplete,
+	})
+}
+
+func (n *Sequencer) onChildComplete(s Status) {
+	c := n.current()
+	switch s := c.State(); s {
+	case Failure:
+		n.Stop(&Event{n, nil}, s)
+	case Running:
+		n.pushCurrentChild()
+	case Success:
+		if _, ok := n.next(); !ok {
+			// reached last child, set state to success
+			n.Stop(&Event{n, nil}, s)
+			return
 		}
-		n.next()
+		n.pushCurrentChild()
 	}
-
-	n.state = Success
-	return n.state
 }
 
-func (n *Sequencer) Teardown() {}
-func (n *Sequencer) Abort()    {}
+func (n *Sequencer) update() Status {
+	n.state = Running
+	return Running
+}
+
+func (n *Sequencer) teardown() {}
+func (n *Sequencer) abort()    {}

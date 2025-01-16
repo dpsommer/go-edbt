@@ -6,14 +6,12 @@ import (
 	goedbt "github.com/dpsommer/go-edbt"
 )
 
-func setupCompositeTree(c goedbt.Composite, tasks ...goedbt.Behaviour) *goedbt.BehaviourTree {
-	for _, t := range tasks {
-		c.AddChild(t)
+func setupCompositeTree(t *goedbt.BehaviourTree, c goedbt.Composite, bb ...goedbt.Behaviour) {
+	for _, b := range bb {
+		c.AddChild(b)
 	}
 
-	tree := goedbt.NewBehaviourTree()
-	tree.Start(c)
-	return tree
+	t.Start(&goedbt.Event{c, nil})
 }
 
 func TestSequencer(t *testing.T) {
@@ -45,8 +43,9 @@ func TestSequencer(t *testing.T) {
 
 	for name, tc := range tt {
 		t.Run(name, func(t *testing.T) {
-			sequencer := goedbt.NewSequencer()
-			tree := setupCompositeTree(sequencer, tc.behaviours...)
+			tree := goedbt.NewBehaviourTree()
+			sequencer := goedbt.NewSequencer(tree)
+			setupCompositeTree(tree, sequencer, tc.behaviours...)
 
 			for _, s := range tc.expected {
 				tree.Tick()

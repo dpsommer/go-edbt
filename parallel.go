@@ -19,6 +19,7 @@ const (
 // a completed child. Continues to tick any Running children if all completed
 // children have been successful, returning Success if all children succeed.
 type Parallel struct {
+	*BehaviourTree
 	*composite
 
 	// only specify a successPolicy - this implicitly defines the failure
@@ -28,8 +29,9 @@ type Parallel struct {
 	runningNodes []Behaviour
 }
 
-func NewParallel(successPolicy Policy) *Parallel {
+func NewParallel(bt *BehaviourTree, successPolicy Policy) *Parallel {
 	return &Parallel{
+		BehaviourTree: bt,
 		successPolicy: successPolicy,
 		composite: &composite{
 			behaviour: &behaviour{state: Invalid},
@@ -38,11 +40,11 @@ func NewParallel(successPolicy Policy) *Parallel {
 	}
 }
 
-func (n *Parallel) Initialize() {
+func (n *Parallel) initialize() {
 	n.runningNodes = keys(n.children)
 }
 
-func (n *Parallel) Update() Status {
+func (n *Parallel) update() Status {
 	var b Behaviour
 	// track success count and required number of successes for RequireAll
 	// we only need len(runningNodes) successes each tick as we can imply that:
@@ -84,12 +86,12 @@ func (n *Parallel) Update() Status {
 	return n.state
 }
 
-func (n *Parallel) Teardown() {
-	// if this node is configured to Teardown early,
+func (n *Parallel) teardown() {
+	// if this node is configured to teardown early,
 	// abort any running children
 	for c := range n.children {
-		c.Abort()
+		c.teardown()
 	}
 }
 
-func (n *Parallel) Abort() {}
+func (n *Parallel) abort() {}

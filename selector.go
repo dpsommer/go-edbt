@@ -3,13 +3,15 @@ package goedbt
 // Selector defines a composite Behaviour that checks each of its children,
 // returning the first non-Failure status or Failure if all children fail
 type Selector struct {
+	*BehaviourTree
 	*composite
 
 	iterator[Behaviour]
 }
 
-func NewSelector() *Selector {
+func NewSelector(bt *BehaviourTree) *Selector {
 	return &Selector{
+		BehaviourTree: bt,
 		composite: &composite{
 			behaviour: &behaviour{state: Invalid},
 			children:  make(Set[Behaviour]),
@@ -17,11 +19,11 @@ func NewSelector() *Selector {
 	}
 }
 
-func (n *Selector) Initialize() {
+func (n *Selector) initialize() {
 	n.iterator = n.Children()
 }
 
-func (n *Selector) Update() Status {
+func (n *Selector) update() Status {
 	for c := range n.seq {
 		status := tick(c)
 		if status != Failure {
@@ -35,5 +37,5 @@ func (n *Selector) Update() Status {
 	return n.state
 }
 
-func (n *Selector) Teardown() {}
-func (n *Selector) Abort()    {}
+func (n *Selector) teardown() {}
+func (n *Selector) abort()    {}
