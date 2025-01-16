@@ -1,6 +1,6 @@
 package goedbt
 
-// Sequencer defines a Behaviour BehaviourNode that checks each of its children,
+// Sequencer defines a composite Behaviour that checks each of its children,
 // returning the first non-Success status or Success if all children succeed
 type Sequencer struct {
 	*composite
