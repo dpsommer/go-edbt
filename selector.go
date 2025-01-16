@@ -11,8 +11,8 @@ type Selector struct {
 func NewSelector() *Selector {
 	return &Selector{
 		composite: &composite{
-			node:     &node{state: Invalid},
-			children: make(Set[Behaviour]),
+			behaviour: &behaviour{state: Invalid},
+			children:  make(Set[Behaviour]),
 		},
 	}
 }

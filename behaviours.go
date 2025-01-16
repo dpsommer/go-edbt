@@ -2,7 +2,7 @@ package goedbt
 
 // SuccessBehaviour
 type SuccessBehaviour struct {
-	node
+	behaviour
 }
 
 func (n *SuccessBehaviour) Initialize() {}
@@ -14,7 +14,7 @@ func (n *SuccessBehaviour) Abort()    {}
 
 // FailureBehaviour
 type FailureBehaviour struct {
-	node
+	behaviour
 }
 
 func (n *FailureBehaviour) Initialize() {}
@@ -26,7 +26,7 @@ func (n *FailureBehaviour) Abort()    {}
 
 // RunningBehaviour
 type RunningBehaviour struct {
-	node
+	behaviour
 }
 
 func (n *RunningBehaviour) Initialize() {}
@@ -38,7 +38,7 @@ func (n *RunningBehaviour) Abort()    {}
 
 // XThenY
 type XThenY struct {
-	node
+	behaviour
 
 	accessed bool
 	X, Y     Status

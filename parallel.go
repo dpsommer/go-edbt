@@ -32,8 +32,8 @@ func NewParallel(successPolicy Policy) *Parallel {
 	return &Parallel{
 		successPolicy: successPolicy,
 		composite: &composite{
-			node:     &node{state: Invalid},
-			children: make(Set[Behaviour]),
+			behaviour: &behaviour{state: Invalid},
+			children:  make(Set[Behaviour]),
 		},
 	}
 }

@@ -11,7 +11,9 @@ func setupCompositeTree(c goedbt.Composite, tasks ...goedbt.Behaviour) *goedbt.B
 		c.AddChild(t)
 	}
 
-	return goedbt.NewBehaviourTree(c)
+	tree := goedbt.NewBehaviourTree()
+	tree.Start(c)
+	return tree
 }
 
 func TestSequencer(t *testing.T) {
@@ -43,12 +45,13 @@ func TestSequencer(t *testing.T) {
 
 	for name, tc := range tt {
 		t.Run(name, func(t *testing.T) {
-			tree := setupCompositeTree(goedbt.NewSequencer(), tc.behaviours...)
+			sequencer := goedbt.NewSequencer()
+			tree := setupCompositeTree(sequencer, tc.behaviours...)
 
 			for _, s := range tc.expected {
-				status := goedbt.Tick(tree.Root)
-				if status != s {
-					t.Errorf("Selector got %d, want %d", status, s)
+				tree.Tick()
+				if sequencer.State() != s {
+					t.Errorf("Selector got %d, want %d", sequencer.State(), s)
 				}
 			}
 		})
