@@ -7,15 +7,22 @@ const (
 	RequireAll
 )
 
-// Parallel defines a composite Behaviour that ticks its children
-// concurrently. Returns Running until at least one child succeeds.
-// If all children fail, returns Failure.
+// Parallel defines a composite Behaviour that ticks all of its children
+// in parallel each tick. Accepts a successPolicy of either RequireOne or
+// RequireAll.
+//
+// With RequireOne, returns Success on the first Success from a child. If
+// no child succeeds, continues to tick any Running children and returns
+// Failure once all children complete unsuccessfully.
+//
+// With RequireAll, returns Failure if a non-Success status is received from
+// a completed child. Continues to tick any Running children if all completed
+// children have been successful, returning Success if all children succeed.
 type Parallel struct {
 	*composite
 
 	// only specify a successPolicy - this implicitly defines the failure
-	// policy and avoids ambiguity (e.g. if successPolicy and failurePolicy
-	// are both RequireAll)
+	// policy and avoids ambiguity
 	successPolicy Policy
 
 	runningNodes []Behaviour
@@ -64,7 +71,7 @@ func (n *Parallel) Update() Status {
 			stillRunning = append(stillRunning, b)
 		} else if n.successPolicy == RequireAll {
 			// fail fast if a child task failed or was aborted
-			n.state = res
+			n.state = Failure
 			return n.state
 		}
 	}
