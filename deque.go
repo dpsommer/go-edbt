@@ -1,6 +1,9 @@
 package goedbt
 
-import "sync"
+import (
+	"fmt"
+	"sync"
+)
 
 // modified version of https://github.com/gammazero/deque for use in the
 // event-driven BT implementation. adds mutex for concurrent access
@@ -133,6 +136,52 @@ func (q *deque[T]) Back() T {
 		panic("deque: Back() called when empty")
 	}
 	return q.buf[q.prev(q.tail)]
+}
+
+// RIndex is the same as Index, but searches from Back to Front. The index
+// returned is from Front to Back, where index 0 is the index of the item
+// returned by Front().
+func (q *deque[T]) RIndex(f func(T) bool) int {
+	if q.Len() > 0 {
+		modBits := len(q.buf) - 1
+		for i := q.count - 1; i >= 0; i-- {
+			if f(q.buf[(q.head+i)&modBits]) {
+				return i
+			}
+		}
+	}
+	return -1
+}
+
+// Remove removes and returns an element from the middle of the queue, at the
+// specified index. Remove(0) is the same as PopFront() and Remove(Len()-1) is
+// the same as PopBack(). Accepts only non-negative index values, and panics if
+// index is out of range.
+//
+// Important: deque is optimized for O(1) operations at the ends of the queue,
+// not for operations in the the middle. Complexity of this function is
+// constant plus linear in the lesser of the distances between the index and
+// either of the ends of the queue.
+func (q *deque[T]) Remove(at int) error {
+	if at < 0 || at >= q.count {
+		return fmt.Errorf("cannot remove element: invalid index %d", at)
+	}
+	rm := (q.head + at) & (len(q.buf) - 1)
+	if at*2 < q.count {
+		for i := 0; i < at; i++ {
+			prev := q.prev(rm)
+			q.buf[prev], q.buf[rm] = q.buf[rm], q.buf[prev]
+			rm = prev
+		}
+		return nil
+	}
+	swaps := q.count - at - 1
+	for i := 0; i < swaps; i++ {
+		next := q.next(rm)
+		q.buf[rm], q.buf[next] = q.buf[next], q.buf[rm]
+		rm = next
+	}
+	return nil
 }
 
 // Clear removes all elements from the queue, but retains the current capacity.
