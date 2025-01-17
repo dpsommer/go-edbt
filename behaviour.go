@@ -25,6 +25,8 @@ func tick(b Behaviour) Status {
 	}
 
 	state := b.update()
+	b.SetState(state)
+
 	if state != Running {
 		b.teardown()
 	}
