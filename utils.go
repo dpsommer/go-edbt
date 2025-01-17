@@ -49,7 +49,3 @@ func keys[K comparable, T any](m map[K]T) []K {
 
 	return keys
 }
-
-func pop[T any](s []T) (T, []T) {
-	return s[len(s)-1], s[:len(s)-1]
-}
