@@ -19,21 +19,20 @@ const (
 // a completed child. Continues to tick any Running children if all completed
 // children have been successful, returning Success if all children succeed.
 type Parallel struct {
-	*BehaviourTree
 	*composite
 
 	// only specify a successPolicy - this implicitly defines the failure
 	// policy and avoids ambiguity
 	successPolicy Policy
-
-	runningNodes []Behaviour
+	successes     int
+	failures      int
 }
 
 func NewParallel(bt *BehaviourTree, successPolicy Policy) *Parallel {
 	return &Parallel{
-		BehaviourTree: bt,
 		successPolicy: successPolicy,
 		composite: &composite{
+			tree:      bt,
 			behaviour: &behaviour{state: Invalid},
 			children:  make(Set[Behaviour]),
 		},
@@ -41,56 +40,44 @@ func NewParallel(bt *BehaviourTree, successPolicy Policy) *Parallel {
 }
 
 func (n *Parallel) initialize() {
-	n.runningNodes = keys(n.children)
+	n.successes = 0
+	n.failures = 0
+	for c := range n.children {
+		n.tree.Start(c, n.onChildComplete)
+	}
+}
+
+func (n *Parallel) onChildComplete(s Status) {
+	switch s {
+	case Success:
+		n.successes += 1
+		if n.successPolicy == RequireOne || n.successes == len(n.children) {
+			n.tree.Stop(&Event{n, nil}, s)
+		}
+	default:
+		n.failures += 1
+		if n.successPolicy == RequireAll || n.failures == len(n.children) {
+			n.tree.Stop(&Event{n, nil}, Failure)
+		}
+	}
+	// teardown and abort any running children if we
+	// stop before all children have finished
+	if n.state != Running && n.successes+n.failures < len(n.children) {
+		n.teardown()
+	}
 }
 
 func (n *Parallel) update() Status {
-	var b Behaviour
-	// track success count and required number of successes for RequireAll
-	// we only need len(runningNodes) successes each tick as we can imply that:
-	// * if RequireOne, we haven't succeeded yet but any Success will be enough
-	// * if RequireAll, completed tasks must have been Success as we fail fast
-	var successes int
-	needSuccesses := len(n.runningNodes)
-
-	// default to Failure so we don't need to count Failures for RequireOne
-	status := Failure
-	// list all still-running tasks; check only that subset on subsequent ticks
-	stillRunning := make([]Behaviour, needSuccesses)
-
-	for len(n.runningNodes) > 0 {
-		b, n.runningNodes = pop(n.runningNodes)
-		res := tick(b)
-
-		if res == Success {
-			successes += 1
-			if n.successPolicy == RequireOne || successes == needSuccesses {
-				n.state = Success
-				return n.state
-			}
-		} else if res == Running {
-			status = Running
-			stillRunning = append(stillRunning, b)
-		} else if n.successPolicy == RequireAll {
-			// fail fast if a child task failed or was aborted
-			n.state = Failure
-			return n.state
-		}
-	}
-
-	if status == Running {
-		n.runningNodes = stillRunning
-	}
-
-	n.state = status
-	return n.state
+	return Running
 }
 
 func (n *Parallel) teardown() {
-	// if this node is configured to teardown early,
-	// abort any running children
 	for c := range n.children {
-		c.teardown()
+		if c.State() == Running {
+			n.tree.Abort(c, func(e *Event) bool {
+				return e.Behaviour == c
+			})
+		}
 	}
 }
 
