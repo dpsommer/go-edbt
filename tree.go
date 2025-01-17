@@ -1,5 +1,7 @@
 package goedbt
 
+type Search func(*Event) bool
+
 type BehaviourTree struct {
 	blackboard map[string]any
 	scheduler  *deque[*Event]
@@ -36,8 +38,8 @@ func (t *BehaviourTree) step() bool {
 	return true
 }
 
-func (t *BehaviourTree) Start(e *Event) {
-	t.scheduler.PushFront(e)
+func (t *BehaviourTree) Start(b Behaviour, o Observer) {
+	t.scheduler.PushFront(&Event{Behaviour: b, Observer: o})
 }
 
 func (t *BehaviourTree) Stop(e *Event, s Status) {
@@ -49,4 +51,9 @@ func (t *BehaviourTree) Stop(e *Event, s Status) {
 	if e.Observer != nil {
 		e.Observer(s)
 	}
+}
+
+func (t *BehaviourTree) Abort(b Behaviour, s Search) {
+	b.abort()
+	t.scheduler.Remove(t.scheduler.RIndex(s))
 }

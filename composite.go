@@ -12,6 +12,7 @@ type Composite interface {
 type composite struct {
 	*behaviour
 
+	tree     *BehaviourTree
 	children Set[Behaviour]
 }
 
