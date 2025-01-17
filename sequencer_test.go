@@ -11,7 +11,7 @@ func setupCompositeTree(t *goedbt.BehaviourTree, c goedbt.Composite, bb ...goedb
 		c.AddChild(b)
 	}
 
-	t.Start(&goedbt.Event{c, nil})
+	t.Start(c, nil)
 }
 
 func TestSequencer(t *testing.T) {
