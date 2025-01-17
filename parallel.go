@@ -1,5 +1,7 @@
 package goedbt
 
+import utils "github.com/dpsommer/go-utils"
+
 type Policy int
 
 const (
@@ -34,7 +36,7 @@ func NewParallel(bt *BehaviourTree, successPolicy Policy) *Parallel {
 		composite: &composite{
 			tree:      bt,
 			behaviour: &behaviour{state: Invalid},
-			children:  make(Set[Behaviour]),
+			children:  make(utils.Set[Behaviour]),
 		},
 	}
 }

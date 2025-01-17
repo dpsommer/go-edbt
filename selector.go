@@ -1,11 +1,13 @@
 package goedbt
 
+import utils "github.com/dpsommer/go-utils"
+
 // Selector defines a composite Behaviour that checks each of its children,
 // returning the first non-Failure status or Failure if all children fail
 type Selector struct {
 	*composite
 
-	iterator[Behaviour]
+	utils.Iterator[Behaviour]
 }
 
 func NewSelector(bt *BehaviourTree) *Selector {
@@ -13,29 +15,29 @@ func NewSelector(bt *BehaviourTree) *Selector {
 		composite: &composite{
 			tree:      bt,
 			behaviour: &behaviour{state: Invalid},
-			children:  make(Set[Behaviour]),
+			children:  make(utils.Set[Behaviour]),
 		},
 	}
 }
 
 func (n *Selector) initialize() {
-	n.iterator = n.Children()
-	n.tree.Start(n.current(), n.onChildComplete)
+	n.Iterator = n.Children()
+	n.tree.Start(n.Current(), n.onChildComplete)
 }
 
 func (n *Selector) onChildComplete(s Status) {
-	c := n.current()
+	c := n.Current()
 
 	switch s := c.State(); s {
 	case Success:
 		n.tree.Stop(&Event{n, nil}, s)
 	default:
-		if _, ok := n.next(); !ok {
+		if _, ok := n.Next(); !ok {
 			// reached last child, set state to failure
 			n.tree.Stop(&Event{n, nil}, Failure)
 			return
 		}
-		n.tree.Start(n.current(), n.onChildComplete)
+		n.tree.Start(n.Current(), n.onChildComplete)
 	}
 }
 

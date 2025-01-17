@@ -1,9 +1,11 @@
 package goedbt
 
+import utils "github.com/dpsommer/go-utils"
+
 type Composite interface {
 	Behaviour
 
-	Children() iterator[Behaviour]
+	Children() utils.Iterator[Behaviour]
 	AddChild(child Behaviour)
 	RemoveChild(child Behaviour)
 	ClearChildren()
@@ -13,15 +15,15 @@ type composite struct {
 	*behaviour
 
 	tree     *BehaviourTree
-	children Set[Behaviour]
+	children utils.Set[Behaviour]
 }
 
-func (n *composite) Children() iterator[Behaviour] {
+func (n *composite) Children() utils.Iterator[Behaviour] {
 	// copy the children map keys to a list so that modifications to it
 	// while we hold an active iterator don't affect iteration. use a list
 	// so that we can replay the same keys if needed
-	cc := keys(n.children)
-	return newIterator(cc)
+	cc := utils.Keys(n.children)
+	return utils.NewIterator(cc)
 }
 
 func (n *composite) AddChild(child Behaviour) {
@@ -36,5 +38,5 @@ func (n *composite) RemoveChild(child Behaviour) {
 
 func (n *composite) ClearChildren() {
 	n.state = Aborted
-	n.children = make(Set[Behaviour])
+	n.children = make(utils.Set[Behaviour])
 }
