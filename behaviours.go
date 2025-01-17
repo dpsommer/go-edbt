@@ -5,36 +5,30 @@ type SuccessBehaviour struct {
 	behaviour
 }
 
-func (n *SuccessBehaviour) initialize() { n.state = Success }
-func (n *SuccessBehaviour) update() Status {
-	return Success
-}
-func (n *SuccessBehaviour) teardown() {}
-func (n *SuccessBehaviour) abort()    {}
+func (n *SuccessBehaviour) initialize()    { n.state = Success }
+func (n *SuccessBehaviour) update() Status { return n.state }
+func (n *SuccessBehaviour) teardown()      {}
+func (n *SuccessBehaviour) abort()         {}
 
 // FailureBehaviour
 type FailureBehaviour struct {
 	behaviour
 }
 
-func (n *FailureBehaviour) initialize() { n.state = Failure }
-func (n *FailureBehaviour) update() Status {
-	return Failure
-}
-func (n *FailureBehaviour) teardown() {}
-func (n *FailureBehaviour) abort()    {}
+func (n *FailureBehaviour) initialize()    { n.state = Failure }
+func (n *FailureBehaviour) update() Status { return n.state }
+func (n *FailureBehaviour) teardown()      {}
+func (n *FailureBehaviour) abort()         {}
 
 // RunningBehaviour
 type RunningBehaviour struct {
 	behaviour
 }
 
-func (n *RunningBehaviour) initialize() { n.state = Running }
-func (n *RunningBehaviour) update() Status {
-	return Running
-}
-func (n *RunningBehaviour) teardown() {}
-func (n *RunningBehaviour) abort()    {}
+func (n *RunningBehaviour) initialize()    { n.state = Running }
+func (n *RunningBehaviour) update() Status { return n.state }
+func (n *RunningBehaviour) teardown()      {}
+func (n *RunningBehaviour) abort()         {}
 
 // XThenY
 type XThenY struct {
