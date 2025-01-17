@@ -18,9 +18,9 @@ The interface we want to define (based on [Agis et al., 2020](https://www.scienc
         * [ ] Inversion?
     * Event-driven
         * [x] BehaviourTree
-        * [ ] Selector
+        * [x] Selector
         * [x] Sequencer
-        * [ ] Parallel
+        * [x] Parallel
     * Coordination
         * [ ] Request Handler
         * [ ] Soft Message Sender
