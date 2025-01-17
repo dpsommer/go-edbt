@@ -3,13 +3,13 @@ package goedbt
 type Search func(*Event) bool
 
 type BehaviourTree struct {
-	blackboard map[string]any
+	blackboard *blackboard
 	scheduler  *deque[*Event]
 }
 
 func NewBehaviourTree() *BehaviourTree {
 	return &BehaviourTree{
-		blackboard: map[string]any{},
+		blackboard: newBlackboard(),
 		scheduler:  &deque[*Event]{},
 	}
 }
