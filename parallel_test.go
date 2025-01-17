@@ -94,15 +94,14 @@ func TestParallel(t *testing.T) {
 
 	for name, tc := range tt {
 		t.Run(name, func(t *testing.T) {
-			tree := setupCompositeTree(
-				goedbt.NewParallel(tc.successPolicy),
-				tc.behaviours...,
-			)
+			tree := goedbt.NewBehaviourTree()
+			parallel := goedbt.NewParallel(tree, tc.successPolicy)
+			setupCompositeTree(tree, parallel, tc.behaviours...)
 
 			for _, s := range tc.expected {
-				status := goedbt.Tick(tree.Root)
-				if status != s {
-					t.Errorf("Selector got %d, want %d", status, s)
+				tree.Tick()
+				if parallel.State() != s {
+					t.Errorf("Selector got %d, want %d", parallel.State(), s)
 				}
 			}
 		})

@@ -2,26 +2,33 @@ package goedbt
 
 type Behaviour interface {
 	State() Status
-	Initialize()
-	Update() Status
-	Teardown()
-	Abort()
+	SetState(s Status)
+
+	initialize()
+	update() Status
+	teardown()
+	abort()
 }
 
-type node struct {
+type behaviour struct {
 	state Status
 }
 
-func (n *node) State() Status { return n.state }
+func (n *behaviour) State() Status { return n.state }
+func (n *behaviour) SetState(s Status) {
+	n.state = s
+}
 
 func tick(b Behaviour) Status {
 	if b.State() != Running {
-		b.Initialize()
+		b.initialize()
 	}
 
-	state := b.Update()
+	state := b.update()
+	b.SetState(state)
+
 	if state != Running {
-		b.Teardown()
+		b.teardown()
 	}
 
 	return state

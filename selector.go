@@ -1,6 +1,6 @@
 package goedbt
 
-// Selector defines a Behaviour BehaviourNode that checks each of its children,
+// Selector defines a composite Behaviour that checks each of its children,
 // returning the first non-Failure status or Failure if all children fail
 type Selector struct {
 	*composite
@@ -8,32 +8,40 @@ type Selector struct {
 	iterator[Behaviour]
 }
 
-func NewSelector() *Selector {
+func NewSelector(bt *BehaviourTree) *Selector {
 	return &Selector{
 		composite: &composite{
-			node:     &node{state: Invalid},
-			children: make(Set[Behaviour]),
+			tree:      bt,
+			behaviour: &behaviour{state: Invalid},
+			children:  make(Set[Behaviour]),
 		},
 	}
 }
 
-func (n *Selector) Initialize() {
+func (n *Selector) initialize() {
 	n.iterator = n.Children()
+	n.tree.Start(n.current(), n.onChildComplete)
 }
 
-func (n *Selector) Update() Status {
-	for c := range n.seq {
-		status := tick(c)
-		if status != Failure {
-			n.state = status
-			return n.state
+func (n *Selector) onChildComplete(s Status) {
+	c := n.current()
+
+	switch s := c.State(); s {
+	case Success:
+		n.tree.Stop(&Event{n, nil}, s)
+	default:
+		if _, ok := n.next(); !ok {
+			// reached last child, set state to failure
+			n.tree.Stop(&Event{n, nil}, Failure)
+			return
 		}
-		n.next()
+		n.tree.Start(n.current(), n.onChildComplete)
 	}
-
-	n.state = Failure
-	return n.state
 }
 
-func (n *Selector) Teardown() {}
-func (n *Selector) Abort()    {}
+func (n *Selector) update() Status {
+	return Running
+}
+
+func (n *Selector) teardown() {}
+func (n *Selector) abort()    {}
