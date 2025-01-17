@@ -5,8 +5,8 @@ type SuccessBehaviour struct {
 	behaviour
 }
 
-func (n *SuccessBehaviour) initialize()    { n.state = Success }
-func (n *SuccessBehaviour) update() Status { return n.state }
+func (n *SuccessBehaviour) initialize()    {}
+func (n *SuccessBehaviour) update() Status { return Success }
 func (n *SuccessBehaviour) teardown()      {}
 func (n *SuccessBehaviour) abort()         {}
 
@@ -15,8 +15,8 @@ type FailureBehaviour struct {
 	behaviour
 }
 
-func (n *FailureBehaviour) initialize()    { n.state = Failure }
-func (n *FailureBehaviour) update() Status { return n.state }
+func (n *FailureBehaviour) initialize()    {}
+func (n *FailureBehaviour) update() Status { return Failure }
 func (n *FailureBehaviour) teardown()      {}
 func (n *FailureBehaviour) abort()         {}
 
@@ -25,8 +25,8 @@ type RunningBehaviour struct {
 	behaviour
 }
 
-func (n *RunningBehaviour) initialize()    { n.state = Running }
-func (n *RunningBehaviour) update() Status { return n.state }
+func (n *RunningBehaviour) initialize()    {}
+func (n *RunningBehaviour) update() Status { return Running }
 func (n *RunningBehaviour) teardown()      {}
 func (n *RunningBehaviour) abort()         {}
 
